@@ -120,7 +120,8 @@ app.post('/api/users/:id/exercises', async (req, res) => {
 // Get user's exercise log
 app.get('/api/users/:_id/logs', async (req, res) => {
   const userId = req.params._id;
-  let { from, to, limit } = req.query;
+  const { from, to, limit } = req.query;
+
 
   try {
     const user = await User.findById(userId);
