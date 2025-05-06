@@ -131,17 +131,23 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     // Handle 'from' and 'to' query parameters for date filtering
     if (from || to) {
       filter.date = {};
-      
+
+      // Validate 'from' date
       if (from) {
-        const fromDate = new Date(from); // Ensure correct date parsing
-        if (isNaN(fromDate)) return res.status(400).json({ error: 'Invalid from date format' });
-        filter.date.$gte = fromDate;
+        const fromDate = new Date(from);
+        if (isNaN(fromDate.getTime())) {
+          return res.status(400).json({ error: 'Invalid from date format' });
+        }
+        filter.date.$gte = fromDate.toISOString(); // Use toISOString for consistency
       }
 
+      // Validate 'to' date
       if (to) {
-        const toDate = new Date(to); // Ensure correct date parsing
-        if (isNaN(toDate)) return res.status(400).json({ error: 'Invalid to date format' });
-        filter.date.$lte = toDate;
+        const toDate = new Date(to);
+        if (isNaN(toDate.getTime())) {
+          return res.status(400).json({ error: 'Invalid to date format' });
+        }
+        filter.date.$lte = toDate.toISOString(); // Use toISOString for consistency
       }
     }
 
