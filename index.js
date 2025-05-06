@@ -147,50 +147,49 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-app.get('/api/users/:_id/logs', async (req, res) => {
+app.get("/api/users/:_id/logs", async (req, res) => {
   try {
     const { from, to, limit } = req.query;
     const { _id } = req.params;
 
     const user = await User.findById(_id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Build query object
-    const dateFilter = {};
-    if (from) dateFilter.$gte = new Date(from);
-    if (to) dateFilter.$lte = new Date(to);
+    const query = { userId: _id };
+    
+    // Filter by date range
+    if (from || to) {
+      query.date = {};
+      if (from) query.date.$gte = new Date(from);
+      if (to) query.date.$lte = new Date(to);
+    }
 
-    const filter = {
-      userId: _id,
-      ...(from || to ? { date: dateFilter } : {})
-    };
+    let exercisesQuery = Exercise.find(query).select("-__v -_id");
 
-    // Find exercises
-    let query = Exercise.find(filter).select('description duration date');
+    // Apply limit
+    if (limit) exercisesQuery = exercisesQuery.limit(parseInt(limit));
 
-    if (limit) query = query.limit(parseInt(limit));
+    const logs = await exercisesQuery.exec();
 
-    const exercises = await query.exec();
-
-    // Format log with date as string
-    const log = exercises.map(e => ({
-      description: e.description,
-      duration: e.duration,
-      date: e.date.toDateString()
+    const formattedLogs = logs.map(log => ({
+      description: log.description,
+      duration: log.duration,
+      date: log.date.toDateString(),
     }));
 
     res.json({
       _id: user._id,
       username: user.username,
-      count: log.length,
-      log: log
+      count: formattedLogs.length,
+      log: formattedLogs
     });
 
   } catch (err) {
-    console.error('Error fetching logs:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
+
 
 
 
