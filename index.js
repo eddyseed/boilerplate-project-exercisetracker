@@ -131,21 +131,35 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     // Handle 'from' and 'to' query parameters for date filtering
     if (from || to) {
       filter.date = {};
-      if (from) filter.date.$gte = new Date(from);  // Date >= from
-      if (to) filter.date.$lte = new Date(to);      // Date <= to
+      
+      if (from) {
+        const fromDate = new Date(from); // Ensure correct date parsing
+        if (isNaN(fromDate)) return res.status(400).json({ error: 'Invalid from date format' });
+        filter.date.$gte = fromDate;
+      }
+
+      if (to) {
+        const toDate = new Date(to); // Ensure correct date parsing
+        if (isNaN(toDate)) return res.status(400).json({ error: 'Invalid to date format' });
+        filter.date.$lte = toDate;
+      }
     }
 
-    // Initialize the query
-    let query = Exercise.find(filter).select('-__v -userId');
+    // Create the base query for exercises
+    let query = Exercise.find(filter).select('-__v -userId'); // Exclude unnecessary fields
 
-    // Apply 'limit' if provided
+    // Apply the 'limit' parameter if provided
     if (limit) {
-      query = query.limit(parseInt(limit));
+      const limitNumber = parseInt(limit);
+      if (isNaN(limitNumber) || limitNumber <= 0) {
+        return res.status(400).json({ error: 'Invalid limit' });
+      }
+      query = query.limit(limitNumber);
     }
 
     const exercises = await query.exec();
 
-    // Send the response in the required format
+    // Return the result in the required format
     res.json({
       _id: user._id,
       username: user.username,
@@ -161,6 +175,7 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 // Server start
