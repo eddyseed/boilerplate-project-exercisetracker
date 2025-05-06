@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); // for parsing JSON bodies
 
 // MongoDB connection
-const uri = process.env.MONGO_URI;
+const uri = `mongodb+srv://randomboiii069:samsung@freecodecampprojects.amkpvst.mongodb.net/?retryWrites=true&w=majority&appName=FreeCodeCampProjects`;
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
