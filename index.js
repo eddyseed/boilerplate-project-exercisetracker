@@ -128,20 +128,24 @@ app.get('/api/users/:_id/logs', async (req, res) => {
 
     const filter = { userId };
 
+    // Handle 'from' and 'to' query parameters for date filtering
     if (from || to) {
       filter.date = {};
-      if (from) filter.date.$gte = new Date(from);
-      if (to) filter.date.$lte = new Date(to);
+      if (from) filter.date.$gte = new Date(from);  // Date >= from
+      if (to) filter.date.$lte = new Date(to);      // Date <= to
     }
 
+    // Initialize the query
     let query = Exercise.find(filter).select('-__v -userId');
 
+    // Apply 'limit' if provided
     if (limit) {
       query = query.limit(parseInt(limit));
     }
 
     const exercises = await query.exec();
 
+    // Send the response in the required format
     res.json({
       _id: user._id,
       username: user.username,
@@ -157,6 +161,7 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // Server start
 const listener = app.listen(process.env.PORT || 3000, () => {
